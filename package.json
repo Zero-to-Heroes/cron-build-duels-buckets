@@ -1,0 +1,55 @@
+{
+	"name": "@firestone-hs/duels-buckets",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {
+		"lint": "eslint --color --fix --ext .ts .",
+		"start": "webpack -w --color",
+		"test": "jest",
+		"build": "npm audit fix && webpack --env.buildEnv=prod --color",
+		"package": "sam package --template-file template.yaml --s3-bucket com.zerotoheroes.artifact --output-template-file template.packaged.yaml",
+		"deploy": "sam deploy --template-file template.packaged.yaml --stack-name TriggerBuildDuelsBucketsStack --capabilities CAPABILITY_IAM",
+		"clean": "rm -rf -v dist/*"
+	},
+	"repository": {},
+	"author": "",
+	"license": "MIT",
+	"private": false,
+	"main": "dist/build-duels-buckets.js",
+	"types": "dist/build-duels-buckets.d.ts",
+	"files": [
+		"dist/**/*"
+	],
+	"dependencies": {
+		"@firestone-hs/hs-replay-xml-parser": "0.0.55",
+		"@firestone-hs/reference-data": "^0.1.187",
+		"aws-sdk": "^2.1044.0",
+		"cross-fetch": "^3.1.5",
+		"deckstrings": "^2.1.0",
+		"jszip": "^3.7.1",
+		"mysql": "^2.17.1",
+		"serverless-mysql": "^1.5.1",
+		"tslib": "^1.9.0"
+	},
+	"devDependencies": {
+		"@types/aws-lambda": "8.10.31",
+		"@types/mysql": "^2.15.7",
+		"@types/node": "12.7.4",
+		"@types/node-fetch": "^2.5.2",
+		"@types/xmldoc": "^1.1.4",
+		"@typescript-eslint/eslint-plugin": "^2.1.0",
+		"@typescript-eslint/parser": "^2.1.0",
+		"eslint": "^6.6.0",
+		"eslint-config-prettier": "^6.5.0",
+		"eslint-loader": "^3.0.2",
+		"eslint-plugin-prettier": "^3.1.1",
+		"prettier": "^1.19.1",
+		"ts-loader": "^6.2.1",
+		"ts-node": "^8.5.0",
+		"typescript": "^3.7.2",
+		"uglifyjs-webpack-plugin": "^2.2.0",
+		"webpack": "^4.39.3",
+		"webpack-cli": "^3.3.8",
+		"yaml-cfn": "^0.2.2"
+	}
+}

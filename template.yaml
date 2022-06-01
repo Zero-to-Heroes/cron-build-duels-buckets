@@ -1,0 +1,36 @@
+# https://github.com/awslabs/serverless-application-model/blob/develop/versions/2016-10-31.md
+# Indentation needs to be set with spaces, because YAML...
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Lambda function that builds Duels buckets on a regular schedule
+
+Resources:
+    BuildDuelsBucketsFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            Handler: build-duels-buckets.default
+            Runtime: nodejs12.x
+            Timeout: 900
+            CodeUri: ./dist/build-duels-buckets
+            MemorySize: 700
+            # https://stackoverflow.com/questions/39144688/aws-lambda-invoke-not-calling-another-lambda-function-node-js
+            # VpcConfig:
+            #     SecurityGroupIds:
+            #         - sg-0ed63616362bf1a30
+            #     SubnetIds:
+            #         - subnet-0b36da5c19637a351
+            #         - subnet-0b730ca9af74a95dd
+            Policies:
+                - AWSLambdaVPCAccessExecutionRole
+                - AmazonSESFullAccess
+                - SecretsManagerReadWrite
+                - AmazonSNSReadOnlyAccess
+                - AmazonS3FullAccess
+                # - arn:aws:iam::478062583808:policy/CloudWatchPolicyForLambda # See https://stackoverflow.com/questions/51166504/disable-cloudwatch-to-monitor-logs-for-lambda-function
+            Tags:
+                LambdaName: cron-build-duels-buckets
+            Events:
+                LastPeriodTrigger:
+                    Type: Schedule
+                    Properties:
+                        Schedule: cron(0 */1 * * ? *)
