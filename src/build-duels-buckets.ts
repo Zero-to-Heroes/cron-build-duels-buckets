@@ -13,7 +13,7 @@ const s3 = new S3();
 // the more traditional callback-style handler.
 // [1]: https://aws.amazon.com/blogs/compute/node-js-8-10-runtime-now-available-in-aws-lambda/
 export default async (event): Promise<any> => {
-	await allCards.initializeCardsDb();
+	await allCards.initializeCardsDb(new Date().toDateString());
 	const mysql = await getConnection();
 
 	const query = `
