@@ -49,17 +49,20 @@ export default async (event): Promise<any> => {
 	console.log(new Date().toLocaleString(), 'groupedByBucketId', Object.keys(groupedByBucketId).length);
 	const bucketInfos: readonly BucketInfo[] = Object.keys(groupedByBucketId)
 		.map(bucketId => {
-			const cardIds = groupedByBucketId[bucketId].flatMap(bucketMap => bucketMap.cardIds);
+			const cardIds = groupedByBucketId[bucketId]
+				.flatMap(bucketMap => bucketMap.cardIds)
+				.map((cardId: string | number) =>
+					isNaN(+cardId) ? (cardId as string) : allCards.getCardFromDbfId(+cardId).id,
+				);
 			const uniqueCardIds = [...new Set(cardIds)].sort();
-			const uniqueCardNames = uniqueCardIds
-				.map(cardId => allCards.getCard(cardId)?.name)
-				.filter(name => !!name)
-				.sort();
 			const cardClasses = uniqueCardIds
 				.map(cardId => allCards.getCard(cardId))
 				.filter(card => !card.classes?.length)
 				.map(card => card.cardClass)
 				.filter(cardClass => !!cardClass)
+				.map(cardClass =>
+					cardClass === CardClass[CardClass.DEATHKNIGHT] ? CardClass[CardClass.NEUTRAL] : cardClass,
+				)
 				.sort();
 			let uniqueClasses = [...new Set(cardClasses)];
 			// Manual overrides
