@@ -33,4 +33,4 @@ Resources:
                 LastPeriodTrigger:
                     Type: Schedule
                     Properties:
-                        Schedule: cron(0 */1 * * ? *)
+                        Schedule: cron(0 1 * * ? *)
