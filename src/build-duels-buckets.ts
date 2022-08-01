@@ -14,6 +14,9 @@ const s3 = new S3();
 // [1]: https://aws.amazon.com/blogs/compute/node-js-8-10-runtime-now-available-in-aws-lambda/
 export default async (event): Promise<any> => {
 	await allCards.initializeCardsDb();
+	if (!allCards.getCard('REV_375').id) {
+		throw new Error('cards not properly initialized');
+	}
 	const mysql = await getConnection();
 
 	const query = `
@@ -80,6 +83,9 @@ export default async (event): Promise<any> => {
 			const cards: readonly BucketCard[] = uniqueCardIds
 				.map(cardId => {
 					const refCard = allCards.getCard(cardId);
+					if (!refCard.id) {
+						console.info('missing card', cardId, refCard);
+					}
 					const totalOffered = cardIds.filter(c => c === cardId).length;
 					return {
 						cardId: cardId,
@@ -87,7 +93,12 @@ export default async (event): Promise<any> => {
 						totalOffered: totalOffered,
 					} as BucketCard;
 				})
-				.sort((a: BucketCard, b: BucketCard) => a.cardId.localeCompare(b.cardId));
+				.sort((a: BucketCard, b: BucketCard) => {
+					if (!a.cardId) {
+						console.log('missing card', a);
+					}
+					return a.cardId.localeCompare(b.cardId);
+				});
 
 			// Now merge the cards that have the same name
 			const groupedByName = groupByFunction((card: BucketCard) => card.cardName)(cards);

@@ -12,7 +12,7 @@ Resources:
             Runtime: nodejs12.x
             Timeout: 900
             CodeUri: ./dist/build-duels-buckets
-            MemorySize: 700
+            MemorySize: 2000
             # https://stackoverflow.com/questions/39144688/aws-lambda-invoke-not-calling-another-lambda-function-node-js
             # VpcConfig:
             #     SecurityGroupIds:
