@@ -23,6 +23,7 @@ export default async (event): Promise<any> => {
 		select * from dungeon_run_loot_info
 		use index (ix_buildBuckets)
 		where creationDate > DATE_SUB(NOW(), INTERVAL 7 DAY)
+		and creationDate > '2022-10-29 22:00:00'
 		and bundleType = 'loot'
 		and adventureType in ('duels', 'paid-duels')
 		order by id desc;
