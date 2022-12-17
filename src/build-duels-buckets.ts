@@ -36,15 +36,15 @@ export default async (event): Promise<any> => {
 
 	const bucketMaps: readonly BucketMap[] = result.flatMap(row => [
 		{
-			bucketId: row.option1,
+			bucketId: allCards.getCard(row.option1).id ?? row.option1,
 			cardIds: row.option1Contents.split(','),
 		},
 		{
-			bucketId: row.option2,
+			bucketId: allCards.getCard(row.option2).id ?? row.option2,
 			cardIds: row.option2Contents.split(','),
 		},
 		{
-			bucketId: row.option3,
+			bucketId: allCards.getCard(row.option3).id ?? row.option3,
 			cardIds: row.option3Contents.split(','),
 		},
 	]);
@@ -55,18 +55,14 @@ export default async (event): Promise<any> => {
 		.map(bucketId => {
 			const cardIds = groupedByBucketId[bucketId]
 				.flatMap(bucketMap => bucketMap.cardIds)
-				.map((cardId: string | number) =>
-					isNaN(+cardId) ? (cardId as string) : allCards.getCardFromDbfId(+cardId).id,
-				);
+				.map((cardId: string | number) => allCards.getCard(cardId).id);
 			const uniqueCardIds = [...new Set(cardIds)].sort();
 			const cardClasses = uniqueCardIds
 				.map(cardId => allCards.getCard(cardId))
 				.filter(card => !card.classes?.length)
 				.map(card => card.cardClass)
 				.filter(cardClass => !!cardClass)
-				.map(cardClass =>
-					cardClass === CardClass[CardClass.DEATHKNIGHT] ? CardClass[CardClass.NEUTRAL] : cardClass,
-				)
+				.map(cardClass => cardClass)
 				.sort();
 			let uniqueClasses = [...new Set(cardClasses)];
 			// Manual overrides
@@ -119,6 +115,7 @@ export default async (event): Promise<any> => {
 				bucketId: bucketId,
 				bucketName: allCards.getCard(bucketId)?.name,
 				bucketClasses: uniqueClasses,
+				totalCards: finalCards.map(c => c.totalOffered).reduce((a, b) => a + b, 0),
 				cards: finalCards,
 			} as BucketInfo;
 		})
