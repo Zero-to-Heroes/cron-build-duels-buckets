@@ -1,17 +1,18 @@
 module.exports = {
 	parser: '@typescript-eslint/parser',
 	parserOptions: {
-		ecmaVersion: 2018, // Allows for the parsing of modern ECMAScript features
+		ecmaVersion: 2022,
 		sourceType: 'module',
-		project: './tsconfig.json',
 	},
+	plugins: ['@typescript-eslint', 'prettier'],
 	env: {
-		'node': true,
+		node: true,
+		es2022: true,
 	},
 	extends: [
+		'eslint:recommended',
 		'plugin:@typescript-eslint/recommended', // Uses the recommended rules from the @typescript-eslint/eslint-plugin
-		'prettier/@typescript-eslint', // Uses eslint-config-prettier to disable ESLint rules from @typescript-eslint/eslint-plugin that would conflict with prettier
-		'plugin:prettier/recommended', // Enables eslint-plugin-prettier and displays prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
+		'prettier',
 	],
 	rules: {
 		'no-multi-spaces': 2,
@@ -41,9 +42,9 @@ module.exports = {
 		'@typescript-eslint/no-unused-vars': [
 			1,
 			{
-				'vars': 'all',
-				'args': 'none', // When implementing interfaces, I find it's easier to read if all parameters are always declared
-				'ignoreRestSiblings': false,
+				vars: 'all',
+				args: 'none', // When implementing interfaces, I find it's easier to read if all parameters are always declared
+				ignoreRestSiblings: false,
 			},
 		],
 		'@typescript-eslint/no-use-before-define': 0,
