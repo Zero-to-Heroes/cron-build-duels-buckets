@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import { getConnectionReadOnly } from '@firestone-hs/aws-lambda-utils';
 import { AllCardsService, CardClass, CardIds } from '@firestone-hs/reference-data';
 import { constants, gzipSync } from 'zlib';
 import { BucketCard, BucketInfo, BucketMap } from './buckets';
-import { getConnection } from './db/rds';
 import { S3 } from './db/s3';
 import { groupByFunction } from './utils/util-functions';
 
@@ -17,7 +17,7 @@ export default async (event): Promise<any> => {
 	if (!allCards.getCard('REV_375').id) {
 		throw new Error('cards not properly initialized');
 	}
-	const mysql = await getConnection();
+	const mysql = await getConnectionReadOnly();
 
 	const query = `
 		select * from dungeon_run_loot_info
@@ -34,7 +34,7 @@ export default async (event): Promise<any> => {
 	await mysql.end();
 	console.log(new Date().toLocaleString(), 'connection closed');
 
-	const bucketMaps: readonly BucketMap[] = result.flatMap(row => [
+	const bucketMaps: readonly BucketMap[] = result.flatMap((row) => [
 		{
 			bucketId: allCards.getCard(row.option1).id ?? row.option1,
 			cardIds: row.option1Contents.split(','),
@@ -52,17 +52,17 @@ export default async (event): Promise<any> => {
 	const groupedByBucketId = groupByFunction((bucketMap: BucketMap) => bucketMap.bucketId)(bucketMaps);
 	console.log(new Date().toLocaleString(), 'groupedByBucketId', Object.keys(groupedByBucketId).length);
 	const bucketInfos: readonly BucketInfo[] = Object.keys(groupedByBucketId)
-		.map(bucketId => {
+		.map((bucketId) => {
 			const cardIds = groupedByBucketId[bucketId]
-				.flatMap(bucketMap => bucketMap.cardIds)
+				.flatMap((bucketMap) => bucketMap.cardIds)
 				.map((cardId: string | number) => allCards.getCard(cardId).id);
 			const uniqueCardIds = [...new Set(cardIds)].sort();
 			const cardClasses = uniqueCardIds
-				.map(cardId => allCards.getCard(cardId))
-				.filter(card => !card.classes?.length)
-				.map(card => card.cardClass)
-				.filter(cardClass => !!cardClass)
-				.map(cardClass => cardClass)
+				.map((cardId) => allCards.getCard(cardId))
+				.filter((card) => !card.classes?.length)
+				.map((card) => card.cardClass)
+				.filter((cardClass) => !!cardClass)
+				.map((cardClass) => cardClass)
 				.sort();
 			let uniqueClasses = [...new Set(cardClasses)];
 			// Manual overrides
@@ -71,19 +71,19 @@ export default async (event): Promise<any> => {
 			}
 
 			if (uniqueClasses.length > 1) {
-				uniqueClasses = uniqueClasses.filter(cardClass => cardClass !== CardClass[CardClass.NEUTRAL]);
+				uniqueClasses = uniqueClasses.filter((cardClass) => cardClass !== CardClass[CardClass.NEUTRAL]);
 				if (uniqueClasses.length !== 1) {
 					console.warn('incorrect bucket class', bucketId, uniqueClasses);
 				}
 			}
 
 			const cards: readonly BucketCard[] = uniqueCardIds
-				.map(cardId => {
+				.map((cardId) => {
 					const refCard = allCards.getCard(cardId);
 					if (!refCard.id) {
 						console.info('missing card', cardId, refCard);
 					}
-					const totalOffered = cardIds.filter(c => c === cardId).length;
+					const totalOffered = cardIds.filter((c) => c === cardId).length;
 					return {
 						cardId: cardId,
 						cardName: refCard?.name,
@@ -99,10 +99,10 @@ export default async (event): Promise<any> => {
 
 			// Now merge the cards that have the same name
 			const groupedByName = groupByFunction((card: BucketCard) => card.cardName)(cards);
-			const finalCards: readonly BucketCard[] = Object.values(groupedByName).map(cardsForName => {
+			const finalCards: readonly BucketCard[] = Object.values(groupedByName).map((cardsForName) => {
 				const totalOffered = cardsForName.reduce((total, card) => total + card.totalOffered, 0);
 				const cardId =
-					cardsForName.find(c => !allCards.getCard(c.cardId)?.deckDuplicateDbfId)?.cardId ??
+					cardsForName.find((c) => !allCards.getCard(c.cardId)?.deckDuplicateDbfId)?.cardId ??
 					cardsForName[0].cardId;
 				return {
 					cardId: cardId,
@@ -115,11 +115,11 @@ export default async (event): Promise<any> => {
 				bucketId: bucketId,
 				bucketName: allCards.getCard(bucketId)?.name,
 				bucketClasses: uniqueClasses,
-				totalCards: finalCards.map(c => c.totalOffered).reduce((a, b) => a + b, 0),
+				totalCards: finalCards.map((c) => c.totalOffered).reduce((a, b) => a + b, 0),
 				cards: finalCards,
 			} as BucketInfo;
 		})
-		.filter(info => !!info.bucketName);
+		.filter((info) => !!info.bucketName);
 	console.log(new Date().toLocaleString(), 'bucketInfos', bucketInfos.length);
 
 	const dataStr = JSON.stringify(bucketInfos, null, 4);
